@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +38,7 @@ public class TestHiddenData {
 	private static Set<String> set = new HashSet<>();
 	private static Set<String> set1 = new HashSet<>();
 	private static StringBuilder dbinsertionSet = new StringBuilder();
-	private static String url = "http://www.brandsfever.com/careers/";
+	private static String url = "http://www.akalinfosys.com/Careers.html";
 	private static Document mainDoc = null;
 	private static int c = 0;
 	private static int j = 0;
@@ -118,9 +120,6 @@ public class TestHiddenData {
 			}
 		}
 
-		// set.removeAll(list);
-		// set1.removeAll(list);
-
 		idArr.addAll(set);
 		classArr.addAll(set1);
 
@@ -129,9 +128,6 @@ public class TestHiddenData {
 
 		set.clear();
 		set1.clear();
-		// list.clear();
-
-		StringBuffer strBuff = new StringBuffer();
 
 		Elements elms = null;
 		for (int i = 0; i < idArr.size(); i++) {
@@ -182,17 +178,17 @@ public class TestHiddenData {
 	private void regexMatcher(String doc1) {
 
 		try {
-			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display|visibility): *(none|hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
-			Matcher m = null;
 
-			String documentString = doc1;
-//			System.out.println(doc1);
+			long myLong = 1;
 			System.out.println("--------------------------------------------------------------------------------");
-			m = p.matcher(doc1);
-			while (m.find()) {
-				seperateClassndDiv(m.group());
-			}
+			Matcher m = p.matcher(doc1); 
+		
+	            	while (m.find()) {
+	    				seperateClassndDiv(m.group());
+	    			}
+	            	
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -204,10 +200,10 @@ public class TestHiddenData {
 		String cssString=cssVal;
 		int docLength = cssString.length();
 		int p;
-		for (int i = 0; i < docLength; i = i + 1000) {
-			for (p = 1000; p < docLength; p++) {
+		for (int i = 0; i < docLength; i = i + 800) {
+			for (p = 800; p < docLength; p++) {
 				docLength = cssString.length();
-				if (docLength > 1000) {
+				if (docLength > 800) {
 					if (cssString.charAt(p) == '}') {
 						String remove="";
 						remove=cssString.substring(0, p + 1);
@@ -228,7 +224,7 @@ public class TestHiddenData {
 	private void regexMatcherElements(String doc,Elements eles) {
 
 		try {
-			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
 
 			String content = "";
 			Pattern p = Pattern.compile(reg);
@@ -240,7 +236,7 @@ public class TestHiddenData {
 			} else {
 				content = doc;
 			}
-			m = p.matcher(content);
+			m = p.matcher(CssFormater.cssBeautifier(content));
 			while (m.find()) {
 				seperateClassndDiv(m.group());
 			}

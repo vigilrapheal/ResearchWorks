@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -97,9 +99,9 @@ public class TestJsoupScraping {
 					addr = hidden.badWordCheck(addr);
 					if (!addr.startsWith("http")) {
 						if (!addr.startsWith("/")) {
-							addr = strarr + "/" + addr;
+							addr = strarr.concat("/").concat(addr);
 						} else
-							addr = strarr + addr;
+							addr = strarr.concat(addr);
 					}
 
 					Document doc1 = Jsoup.connect(addr).header("Accept-Encoding", "gzip, deflate")
@@ -178,9 +180,9 @@ public class TestJsoupScraping {
 			insertIntoDB();
 			++j;
 			System.out.println("Inserted----" + j);
-			long timeConsumed = System.currentTimeMillis() - startTime;
+			long timeConsumed = (System.currentTimeMillis() - startTime) / 1000;
 			System.out.println("\n ----------------------------------------- ");
-			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "\n");
+			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "seconds\n");
 			System.out.println(" ----------------------------------------- \n");
 		}
 
@@ -191,10 +193,10 @@ public class TestJsoupScraping {
 		String cssString = cssVal;
 		int docLength = cssString.length();
 		int p;
-		for (int i = 0; i < docLength; i = i + 1000) {
-			for (p = 1000; p < docLength; p++) {
+		for (int i = 0; i < docLength; i = i + 100) {
+			for (p = 100; p < docLength; p++) {
 				docLength = cssString.length();
-				if (docLength > 1000) {
+				if (docLength > 100) {
 					if (cssString.charAt(p) == '}') {
 						String remove = "";
 						remove = cssString.substring(0, p + 1);
@@ -213,7 +215,7 @@ public class TestJsoupScraping {
 	private void regexMatcher(String doc1) {
 
 		try {
-			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display|visibility): *(none|hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = null;
 			m = p.matcher(doc1);
@@ -222,16 +224,33 @@ public class TestJsoupScraping {
 
 				seperateClassndDiv(m.group());
 			}
+			visibilityChecker(doc1);
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 
 	}
 
+	private void visibilityChecker(String doc) {
+
+		try {
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(visibility: *hidden)[^\\}]*\\}";
+			Pattern p = Pattern.compile(reg);
+			Matcher m = p.matcher(doc);
+
+			while (m.find()) {
+				seperateClassndDiv(m.group());
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
 	private void regexMatcherElements(String doc, Elements eles) {
 
 		try {
-			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
 
 			String content = "";
 			Pattern p = Pattern.compile(reg);
@@ -239,14 +258,14 @@ public class TestJsoupScraping {
 			if (eles.size() < 3) {
 				seleniumRun();
 				content = mainDoc.select("style").toString();
-				// writeToFile(content);
 			} else {
 				content = doc;
 			}
-			m = p.matcher(content);
+			m = p.matcher(CssFormater.cssBeautifier(content));
 			while (m.find()) {
 				seperateClassndDiv(m.group());
 			}
+			visibilityChecker(content);
 
 		} catch (Exception e) {
 			System.out.println(e);
