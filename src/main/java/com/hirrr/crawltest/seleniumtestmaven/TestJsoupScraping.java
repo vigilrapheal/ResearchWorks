@@ -44,16 +44,23 @@ public class TestJsoupScraping {
 		File file = new File("/home/vigil/Desktop/output/hidden_Data_Test_run");
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String value = "";
+		Elements eles = null;
+		String mainDocCss = "";
 		long startTime;
 		while ((value = reader.readLine()) != null) {
 			try {
-				startTime=System.currentTimeMillis();
+				startTime = System.currentTimeMillis();
 				url = value;
 				System.out.println(url);
 				mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
 						.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
 						.maxBodySize(0).timeout(60000).get();
-				mainDoc = hidden.mediaChecker(mainDoc);
+
+				eles = mainDoc.select("style");
+
+				if (!eles.isEmpty()) {
+					mainDocCss = hidden.mediaChecker(eles.toString());
+				}
 
 			} catch (Exception e) {
 
@@ -67,7 +74,7 @@ public class TestJsoupScraping {
 			ArrayList<String> classArr = new ArrayList<>();
 
 			// System.out.println(doc.select("style"));
-			hidden.regexMatcherElements(mainDoc);
+			hidden.regexMatcherElements(mainDocCss, eles);
 			if (mainDoc == null)
 				continue;
 			// regexMatcher(doc);
@@ -94,12 +101,20 @@ public class TestJsoupScraping {
 						} else
 							addr = strarr + addr;
 					}
+
 					Document doc1 = Jsoup.connect(addr).header("Accept-Encoding", "gzip, deflate")
 							.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
 							.maxBodySize(0).timeout(60000).get();
 
-					doc1 = hidden.mediaChecker(doc1);
-					hidden.regexMatcher(doc1);
+					String docString = doc1.toString();
+					docString = hidden.mediaChecker(docString);
+					String cssBeautify = CssFormater.cssBeautifier(docString);
+					if (cssBeautify.isEmpty()) {
+						String cssFromDoc1 = doc1.select("style").toString();
+						hidden.curlyBraceCheckerAndDocSplitter(cssFromDoc1);
+						continue;
+					}
+					hidden.curlyBraceCheckerAndDocSplitter(cssBeautify);
 
 				} catch (Exception e) {
 					continue;
@@ -163,22 +178,45 @@ public class TestJsoupScraping {
 			insertIntoDB();
 			++j;
 			System.out.println("Inserted----" + j);
-			long timeConsumed=System.currentTimeMillis()-startTime;
+			long timeConsumed = System.currentTimeMillis() - startTime;
 			System.out.println("\n ----------------------------------------- ");
-			System.err.println("TOTAL TIME CONSUMED --- "+timeConsumed+"\n");
+			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "\n");
 			System.out.println(" ----------------------------------------- \n");
 		}
 
 	}
 
-	private void regexMatcher(Document doc1) {
+	private void curlyBraceCheckerAndDocSplitter(String cssVal) {
+
+		String cssString = cssVal;
+		int docLength = cssString.length();
+		int p;
+		for (int i = 0; i < docLength; i = i + 1000) {
+			for (p = 1000; p < docLength; p++) {
+				docLength = cssString.length();
+				if (docLength > 1000) {
+					if (cssString.charAt(p) == '}') {
+						String remove = "";
+						remove = cssString.substring(0, p + 1);
+						regexMatcher(remove);
+						cssString = cssString.replace(remove, "").trim();
+						// System.out.println(cssString.length());
+					}
+				} else {
+					regexMatcher(cssString);
+					break;
+				}
+			}
+		}
+	}
+
+	private void regexMatcher(String doc1) {
 
 		try {
 			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display|visibility): *(none|hidden)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = null;
-			String beautifiedCss = CssFormater.cssBeautifier(doc1.toString());
-			m = p.matcher(beautifiedCss);
+			m = p.matcher(doc1);
 			// System.out.println(doc1.select("style"));
 			while (m.find()) {
 
@@ -190,7 +228,7 @@ public class TestJsoupScraping {
 
 	}
 
-	private void regexMatcherElements(Document doc) {
+	private void regexMatcherElements(String doc, Elements eles) {
 
 		try {
 			String reg = "((\\.|\\#)([ \\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
@@ -198,13 +236,12 @@ public class TestJsoupScraping {
 			String content = "";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = null;
-			if (doc.select("style").size() < 3) {
+			if (eles.size() < 3) {
 				seleniumRun();
-
-				content = mainDoc.toString();
+				content = mainDoc.select("style").toString();
 				// writeToFile(content);
 			} else {
-				content = doc.toString();
+				content = doc;
 			}
 			m = p.matcher(content);
 			while (m.find()) {
@@ -342,7 +379,7 @@ public class TestJsoupScraping {
 			}
 		}
 
-		int h=0;
+		int h = 0;
 		eles.clear();
 		eles = elements;
 		for (int i = 1; i < splitArr.length; i++) {
@@ -356,10 +393,10 @@ public class TestJsoupScraping {
 					String id = "#" + element.select(splitArr[i]).attr("id");
 					if (splitArr[i].equals(id))
 						elements = element.select(splitArr[i]);
-				}else {
-					if(h==0) {
-					elements = element.select(splitArr[i]);
-					h++;
+				} else {
+					if (h == 0) {
+						elements = element.select(splitArr[i]);
+						h++;
 					}
 				}
 
@@ -395,6 +432,24 @@ public class TestJsoupScraping {
 		}
 	}
 
+	private String mediaChecker(String doc) {
+
+		String docContent = doc;
+		String reg = "@media[^@]+\\}\\s\\}";
+		Pattern p = Pattern.compile(reg);
+		Matcher m = null;
+		m = p.matcher(docContent);
+		while (m.find()) {
+			try {
+				docContent = docContent.replace(m.group(), "");
+			} catch (Exception e) {
+				return doc;
+			}
+		}
+		// System.out.println(Jsoup.parse(docContent));
+		return docContent;
+	}
+
 	private Document mediaChecker(Document doc) {
 
 		String docContent = doc.toString();
@@ -403,7 +458,7 @@ public class TestJsoupScraping {
 		Matcher m = null;
 		m = p.matcher(doc.toString());
 		while (m.find()) {
-//			System.out.println(m.group());
+			// System.out.println(m.group());
 			try {
 				docContent = docContent.replace(m.group(), "");
 			} catch (Exception e) {
