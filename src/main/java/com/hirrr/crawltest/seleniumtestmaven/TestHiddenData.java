@@ -2,11 +2,8 @@ package com.hirrr.crawltest.seleniumtestmaven;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,7 +26,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.w3c.tidy.Tidy;
 
 import com.mysql.jdbc.PreparedStatement;
 
@@ -37,8 +33,8 @@ public class TestHiddenData {
 
 	private static Set<String> set = new HashSet<>();
 	private static Set<String> set1 = new HashSet<>();
-	private static StringBuilder dbinsertionSet = new StringBuilder();
-	private static String url = "http://www.akalinfosys.com/Careers.html";
+	private static StringBuffer dbinsertionSet = new StringBuffer();
+	private static String url = "";
 	private static Document mainDoc = null;
 	private static int c = 0;
 	private static int j = 0;
@@ -46,197 +42,231 @@ public class TestHiddenData {
 
 	public static void main(String[] args) throws IOException, SQLException {
 
+		CssFormater cssObj=new CssFormater();
 		TestHiddenData hidden = new TestHiddenData();
 		File file = new File("/home/vigil/Desktop/output/hidden_Data_Test_run");
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String value = "";
-		Elements eles=null;
-		String mainDocCss="";
-		try {
-			System.out.println(url);
-			mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
-					.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
-					.maxBodySize(0).timeout(60000).get();
-			
-			eles=mainDoc.select("style");
-			
-			if(!eles.isEmpty()) {
-				mainDocCss = hidden.mediaChecker(eles.toString());
-			}
-			
-			
-		} catch (Exception e) {
-
-			j++;
-			dbinsertionSet.append("Exception");
-		}
-
-		ArrayList<String> idArr = new ArrayList<>();
-		ArrayList<String> classArr = new ArrayList<>();
-
-		// System.out.println(doc.select("style"));
-		hidden.regexMatcherElements(mainDocCss,eles);
-
-		Elements elem = null;
-		// try {
-		elem = mainDoc.select("link");
-		// } catch (Exception e) {
-		//
-		// hidden.seleniumRun();
-		// elem = mainDoc.select("link");
-		// }
-		// System.out.println(elem.size());
-		String strarr = url.replaceAll("(https?://[^\\/]+)\\/.*", "$1");
-
-		for (Element el : elem) {
-
+		Elements eles = null;
+		String mainDocCss = "";
+		long startTime=0;
+		
 			try {
-
-				String addr = el.attr("href");
-				addr = hidden.badWordCheck(addr);
-				if (!addr.startsWith("http")) {
-					if (!addr.startsWith("/")) {
-						addr = strarr.concat("/").concat(addr);
-					} else
-						addr = strarr.concat(addr);
-				}
-				
-				Document doc1 = Jsoup.connect(addr).header("Accept-Encoding", "gzip, deflate")
+				startTime = System.currentTimeMillis();
+				url = "http://www.ambalalshares.com/Careers.aspx";
+				System.out.println(url);
+				mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
 						.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
 						.maxBodySize(0).timeout(60000).get();
-				
-				String docString = doc1.toString();
-				docString=hidden.mediaChecker(docString);
-				String cssBeautify = CssFormater.cssBeautifier(docString);
-				if(cssBeautify.isEmpty()) {
-					String cssFromDoc1=doc1.select("style").toString();
-					hidden.curlyBraceCheckerAndDocSplitter(cssFromDoc1);
-					continue;
+
+				eles = mainDoc.select("style");
+
+				if (!eles.isEmpty()) {
+					mainDocCss = hidden.mediaChecker(eles.toString());
 				}
-				hidden.curlyBraceCheckerAndDocSplitter(cssBeautify);
 
 			} catch (Exception e) {
-				continue;
+
+				j++;
+				dbinsertionSet.append("Exception");
 			}
-		}
 
-		idArr.addAll(set);
-		classArr.addAll(set1);
+			ArrayList<String> idArr = new ArrayList<>();
+			ArrayList<String> classArr = new ArrayList<>();
 
-		System.out.println(idArr);
-		System.out.println(classArr);
+			// System.out.println(doc.select("style"));
+			hidden.regexMatcherElements(mainDocCss, eles);
+			// regexMatcher(doc);
+			Elements elem = null;
+			// try {
+			elem = mainDoc.select("link");
+			// } catch (Exception e) {
+			//
+			// hidden.seleniumRun();
+			// elem = mainDoc.select("link");
+			// }
+			// System.out.println(elem.size());
+			String strarr = url.replaceAll("(https?://[^\\/]+)\\/.*", "$1");
 
-		set.clear();
-		set1.clear();
+			for (Element el : elem) {
 
-		Elements elms = null;
-		for (int i = 0; i < idArr.size(); i++) {
-			String elementId = idArr.get(i).trim();
-			if (!elementId.contains(" ") && !elementId.contains(">")) {
+				try {
 
-				elms = mainDoc.select("body").select("*");
-				hidden.exactClassIdSelector(elms, elementId);
-			} else if (!elementId.contains(">")) {
+					String addr = el.attr("href");
+					addr = hidden.badWordCheck(addr);
+					if (!addr.startsWith("http")) {
+						if (!addr.startsWith("/")) {
+							addr = strarr.concat("/").concat(addr);
+						} else
+							addr = strarr.concat(addr);
+					}
+					System.out.println(addr);
+					Document doc1 = Jsoup.connect(addr).header("Accept-Encoding", "gzip, deflate")
+							.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
+							.maxBodySize(0).timeout(60000).get();
 
-				hidden.selectElement(elementId);
-			} else {
-				elms = mainDoc.select(elementId);
-				if (!elms.isEmpty()) {
-					dbinsertionSet.append(elementId + "****");
+					String docString = doc1.toString();
+					docString = hidden.mediaChecker(docString);
+//					String cssBeautify = CssFormater.cssBeautifier(docString);
+//					if (cssBeautify.isEmpty()) {
+//						String cssFromDoc1 = doc1.select("style").toString();
+//						String classDiv=cssObj.curlyBraceTraveller(cssFromDoc1);
+//						hidden.seperateClassndDiv(classDiv);
+//						continue;
+//					}
+					String classDiv=cssObj.curlyBraceTraveller(docString);
+					hidden.seperateClassndDiv(classDiv);
+				} catch (Exception e) {
+					continue;
 				}
 			}
-		}
 
-		c++;
+			idArr.addAll(set);
+			classArr.addAll(set1);
 
-		elms = null;
-		for (int i = 0; i < classArr.size(); i++) {
-			String elementId = classArr.get(i).trim();
-			if (!elementId.contains(" ") && !elementId.contains(">")) {
-				elms = mainDoc.select("body").select(elementId);
-				hidden.exactClassIdSelector(elms, elementId);
-				elms.clear();
-			} else if (!elementId.contains(">")) {
+			System.out.println(idArr);
+			System.out.println(classArr);
 
-				hidden.selectElement(elementId);
-			} else {
-				elms = mainDoc.select(elementId);
-				if (!elms.isEmpty()) {
-					dbinsertionSet.append(elementId + "****");
+			set.clear();
+			set1.clear();
+			// list.clear();
+
+			StringBuffer strBuff = new StringBuffer();
+
+			Elements elms = null;
+			for (int i = 0; i < idArr.size(); i++) {
+				String elementId = idArr.get(i).trim();
+				if (!elementId.contains(" ") && !elementId.contains(">")) {
+
+					elms = mainDoc.select("body").select("*");
+					hidden.exactClassIdSelector(elms, elementId);
+				} else if (!elementId.contains(">")) {
+
+					hidden.selectElement(elementId);
+				} else {
+					elms = mainDoc.select(elementId);
+					if (!elms.isEmpty()) {
+						dbinsertionSet.append(elementId + "****");
+					}
 				}
 			}
 
-			// System.out.println(elms);
-			// System.out.println("--------------------------------------------------------------------");
+			c++;
+
+			elms = null;
+			for (int i = 0; i < classArr.size(); i++) {
+				String elementId = classArr.get(i).trim();
+				if (!elementId.contains(" ") && !elementId.contains(">")) {
+					elms = mainDoc.select("body").select("*");
+					hidden.exactClassIdSelector(elms, elementId);
+					elms.clear();
+				} else if (!elementId.contains(">")) {
+
+					hidden.selectElement(elementId);
+				} else {
+					elms = mainDoc.select(elementId);
+					if (!elms.isEmpty()) {
+						dbinsertionSet.append(elementId + "****");
+					}
+				}
+
+			}
+
+			++j;
+			System.out.println("Inserted----" + j);
+			long timeConsumed = (System.currentTimeMillis() - startTime) / 1000;
+			System.out.println("\n ----------------------------------------- ");
+			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "seconds\n");
+			System.out.println(" ----------------------------------------- \n");
 		}
 
-		++j;
-		System.out.println("Inserted----" + j);
 
+	private void curlyBraceCheckerAndDocSplitter(String cssVal) {
+
+//		String cssString = cssVal;
+//		int docLength = cssString.length();
+//		int p;
+//		for (int i = 0; i < docLength; i = i + 100) {
+//			for (p = 100; p < docLength; p++) {
+//				docLength = cssString.length();
+//				if (docLength > 100) {
+//					if (cssString.charAt(p) == '}') {
+//						String remove = "";
+//						remove = cssString.substring(0, p + 1);
+//						regexMatcher(remove);
+//						cssString = cssString.replace(remove, "").trim();
+//						// System.out.println(cssString.length());
+//					}
+//				} else {
+//					regexMatcher(cssString);
+//					break;
+//				}
+//			}
+//		}
+		
+		
+		String css=cssVal;
+		int docLength = css.length();
+		for (int i = 0; i < docLength; i++) {
+			if(css.charAt(i)=='}') {
+				int limit=i;
+				String checkContent=css.substring(0, limit+1);
+				regexMatcher(checkContent);
+				css=css.substring(limit+1,docLength);
+				docLength = css.length();
+				i=0;
+			}
+		}
+		
+	}
+	
+	public String commentRemover(String value) {
+		
+		int p=0;
+		String returnVal=value;
+		int returnValLentgth=returnVal.length();
+		for (int i = 0; i < returnValLentgth; i++) {
+			if(returnVal.charAt(i)=='/' && returnVal.charAt(i+1)=='*') {
+				for ( p = i; p < returnValLentgth; p++) {
+					if(returnVal.charAt(p)=='*' && returnVal.charAt(p+1)=='/') {
+						String remove=returnVal.substring(i, p+2);
+						returnVal=returnVal.replace(remove, "").trim();
+						returnValLentgth=returnVal.length();
+						break;
+					}
+					
+				}
+			}
+			}
+		return returnVal.trim();
 	}
 
 	private void regexMatcher(String doc1) {
 
 		try {
-			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
+			Matcher m = null;
+			m = p.matcher(doc1);
+			// System.out.println(doc1.select("style"));
+			while (m.find()) {
 
-			long myLong = 1;
-			System.out.println("--------------------------------------------------------------------------------");
-			Matcher m = p.matcher(doc1); 
-		
-	            	while (m.find()) {
-	    				seperateClassndDiv(m.group());
-	    			}
-	            	
+				seperateClassndDiv(m.group());
+			}
+			visibilityChecker(doc1);
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 
 	}
 
-	private void curlyBraceCheckerAndDocSplitter(String cssVal) {
-
-		String cssString=cssVal;
-		int docLength = cssString.length();
-		int p;
-		for (int i = 0; i < docLength; i = i + 800) {
-			for (p = 800; p < docLength; p++) {
-				docLength = cssString.length();
-				if (docLength > 800) {
-					if (cssString.charAt(p) == '}') {
-						String remove="";
-						remove=cssString.substring(0, p + 1);
-						regexMatcher(remove);
-						cssString=cssString.replace(remove, "").trim();
-						System.out.println(cssString.length());
-					} else {
-						continue;
-					}
-				} else {
-					regexMatcher(cssString);
-					break;
-				}
-			}
-		}
-	}
-
-	private void regexMatcherElements(String doc,Elements eles) {
+	private void visibilityChecker(String doc) {
 
 		try {
-			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none|visibility: *hidden)[^\\}]*\\}";
-
-			String content = "";
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(visibility: *hidden)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
-			Matcher m = null;
-			if (eles.size() < 3) {
-				seleniumRun();
-				content = mainDoc.select("style").toString();
-				// writeToFile(content);
-			} else {
-				content = doc;
-			}
-			m = p.matcher(CssFormater.cssBeautifier(content));
+			Matcher m = p.matcher(doc);
+
 			while (m.find()) {
 				seperateClassndDiv(m.group());
 			}
@@ -246,17 +276,42 @@ public class TestHiddenData {
 		}
 	}
 
-	private void seperateClassndDiv(String string) {
+	private void regexMatcherElements(String doc, Elements eles) {
 
-		String reg = "\\{[^\\}]+\\}";
 		try {
+			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
+
+			String content = "";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = null;
-			m = p.matcher(string);
+			if (eles.size() < 3) {
+				seleniumRun();
+				content = mainDoc.select("style").toString();
+			} else {
+				content = doc;
+			}
+			m = p.matcher(CssFormater.cssBeautifier(content));
+			while (m.find()) {
+				seperateClassndDiv(m.group());
+			}
+			visibilityChecker(content);
 
-			if (m.find()) {
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
 
-				string = string.replaceAll(reg, "");
+	public void seperateClassndDiv(String string) {
+
+//		String reg = "\\{[^\\}]+\\}";
+		try {
+//			Pattern p = Pattern.compile(reg);
+//			Matcher m = null;
+//			m = p.matcher(string);
+
+//			if (m.find()) {
+
+//				string = string.replaceAll(reg, "");
 				if (string.contains(",")) {
 					String[] arr = string.split(",");
 					for (int i = 0; i < arr.length; i++) {
@@ -283,7 +338,7 @@ public class TestHiddenData {
 					}
 
 				}
-			}
+//			}
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -372,9 +427,9 @@ public class TestHiddenData {
 			}
 		}
 
+		int h = 0;
 		eles.clear();
 		eles = elements;
-		int h = 0;
 		for (int i = 1; i < splitArr.length; i++) {
 			for (Element element : elements) {
 				// elements = element.select(splitArr[i]);
@@ -428,7 +483,7 @@ public class TestHiddenData {
 	private String mediaChecker(String doc) {
 
 		String docContent = doc;
-		String reg = "@media[^@]+\\}\\s\\}";
+		String reg = "@[^@]+\\}\\s\\}";
 		Pattern p = Pattern.compile(reg);
 		Matcher m = null;
 		m = p.matcher(docContent);
@@ -446,7 +501,7 @@ public class TestHiddenData {
 	private Document mediaChecker(Document doc) {
 
 		String docContent = doc.toString();
-		String reg = "@media[^@]+\\}\\s\\}";
+		String reg = "@[^@]+\\}\\s\\}";
 		Pattern p = Pattern.compile(reg);
 		Matcher m = null;
 		m = p.matcher(doc.toString());
@@ -492,25 +547,5 @@ public class TestHiddenData {
 		}
 
 	}
-	// private static void removeUnwantedData() {
-	//
-	// ArrayList<String> removeCon=new ArrayList<>();
-	// int counter=0;
-	//
-	// for(int i=0;i<list.size();i++) {
-	// for(int j=0;j<list.size();j++) {
-	// if(list.get(i).equals(list.get(j))){
-	// counter++;
-	// }
-	// }
-	// if(counter!=0) {
-	// removeCon.add(list.get(i));
-	// }
-	// }
-	//
-	// list.clear();
-	// list=removeCon;
-	//
-	// }
 
 }
