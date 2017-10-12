@@ -13,8 +13,8 @@ public class CssFormater {
 
 		CssFormater css = new CssFormater();
 
-		String cleanHtml = css.htmlRemover(value);
-		cleanHtml = css.cssBeautify(cleanHtml);
+		// String cleanHtml = css.htmlRemover(value);
+		String cleanHtml = css.cssBeautify(value);
 
 		return cleanHtml;
 	}
@@ -75,87 +75,111 @@ public class CssFormater {
 	}
 
 	public String curlyBraceTraveller(String cssVal) {
-		StringBuilder returnBuilder=new StringBuilder();
+		StringBuilder returnBuilder = new StringBuilder();
 		String requiredPath = "";
 		int closeBrace;
 		int cssLength = cssVal.length();
+		// System.out.println("Length ---------------------------------------
+		// "+cssLength);
 		int j = 0;
 		int i = 0;
 		String limit = "";
+		int k = 0;
+
 		for (i = 0; i < cssLength;) {
-			// cssLength=cssVal.length();
-//			System.out.println(cssVal.charAt(i));
-			if (cssVal.charAt(i) == '{') {
-				requiredPath = cssVal.substring(0, i);
-				for (j = i; j < cssLength; j++) {
-					// System.out.println(cssVal.charAt(j));
-					if (cssVal.charAt(j) == '}') {
-						closeBrace = j;
-						limit = cssVal.substring(0, closeBrace + 1);
-						if (displayAndVisisbility(limit)) {
-							returnBuilder.append(commentRemover(requiredPath)+", ");
+			if (cssVal.contains("{")) {
+				if (cssVal.charAt(i) == '{') {
+					// if(i==20_000)break;
+					requiredPath = cssVal.substring(0, i);
+					if (cssVal.contains("}")) {
+						for (j = i; j < cssLength; j++) {
+							// System.out.println("ethi----- "+j);
+							if (cssVal.charAt(j) == '}') {
+								closeBrace = j;
+								limit = cssVal.substring(i, closeBrace + 1);
+								if (displayAndVisisbility(limit)) {
+									returnBuilder.append(requiredPath + ", ");
+								}
+
+								// cssVal = cssVal.replace(limit, "").trim();
+								cssVal = cssVal.substring(closeBrace + 1, cssLength).trim();
+
+								cssLength = cssVal.length();
+								// System.out.println("Length ---- "+cssLength);
+								i = 0;
+								// System.out.println(limit);
+								break;
+
+							} else
+								continue;
 						}
-
-						cssVal = cssVal.replace(limit, "").trim();
-						cssLength = cssVal.length();
-						i = 0;
-						// System.out.println(limit);
-						break;
-
 					} else
-						continue;
+						break;
+				} else {
+					i++;
 				}
-			} else {
-				i++;
-			}
 
+			} else
+				break;
 		}
 		return returnBuilder.toString();
 	}
 
 	public String commentRemover(String value) {
 
-		int p = 0;
-		String returnVal = value;
-		int returnValLentgth = returnVal.length();
-		for (int i = 0; i < returnValLentgth; i++) {
-			if (returnVal.charAt(i) == '/' && returnVal.charAt(i + 1) == '*') {
-				for (p = i; p < returnValLentgth; p++) {
-					if (returnVal.charAt(p) == '*' && returnVal.charAt(p + 1) == '/') {
-						String remove = returnVal.substring(i, p + 2);
-						returnVal = returnVal.replace(remove, "").trim();
-						returnValLentgth = returnVal.length();
-						break;
-					}
+		String val = value;
+		String regex = "\\/\\*[^*]+\\*\\/";
 
-				}
-			}
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(val);
+		while (m.find()) {
+			val = val.replace(m.group(), "");
 		}
-		
-		return htmlRemover(returnVal.trim());
+
+		// int p = 0;
+		// String returnVal = value;
+		// int returnValLentgth = returnVal.length();
+		// for (int i = 0; i < returnValLentgth; i++) {
+		// if (returnVal.charAt(i) == '/' /*&& returnVal.charAt(i + 1) == '*'*/) {
+		// for (p = i; p < returnValLentgth; p++) {
+		// if (returnVal.charAt(p) == '/' /*&& returnVal.charAt(p + 1) == '/'*/) {
+		// String remove = returnVal.substring(i, p + 2);
+		// returnVal = returnVal.replace(remove, "").trim();
+		// returnValLentgth = returnVal.length();
+		// break;
+		// }
+		//
+		// }
+		// }
+		// }
+
+		return htmlRemover(val.trim());
 	}
 
 	private boolean displayAndVisisbility(String value) {
 
-		TestJsoupScraping jsoup = new TestJsoupScraping();
-		String reg = " *visibility *: *hidden";
-		String reg1 = " *display *: *none";
-		Pattern p = Pattern.compile(reg);
-		Pattern p1 = Pattern.compile(reg1);
+		// TestJsoupScraping jsoup = new TestJsoupScraping();
+		// String reg = " *visibility *: *hidden";
+		// String reg1 = " *display *: *none";
+		// Pattern p = Pattern.compile(reg);
+		// Pattern p1 = Pattern.compile(reg1);
+		//
+		// Matcher m = p.matcher(value);
+		// Matcher m1 = p1.matcher(value);
+		// if (m.find()) {
+		// // jsoup.seperateClassndDiv(m.group());
+		//// System.out.println(m.group());
+		// return true;
+		// }
+		// else if (m1.find()) {
+		// // jsoup.seperateClassndDiv(m1.group());
+		//// System.out.println(m1.group());
+		// return true;
+		// }
+		// return false;
 
-		Matcher m = p.matcher(value);
-		Matcher m1 = p1.matcher(value);
-		if (m.find()) {
-			// jsoup.seperateClassndDiv(m.group());
-//			System.out.println(m.group());
-			return true;
-		}
-		else if (m1.find()) {
-			// jsoup.seperateClassndDiv(m1.group());
-//			System.out.println(m1.group());
-			return true;
-		}
-		return false;
+		return (value.contains("display: none") || value.contains("visibility: hidden")
+				|| value.contains("display:none") || value.contains("visibility:hidden")) ? true : false;
 	}
 
 	public static void main(String[] args) {
@@ -167,7 +191,7 @@ public class CssFormater {
 				+ " .ddsmoothmenu ul li ul{\n" + "		position:absolute;\n" + "		left:-3000px;\n"
 				+ "		display:none;\n" + "		visibility:hidden;\n" + "		}\n" + "\n" + "\n" + "\n"
 				+ " .ddsmoothmenu ul li ul li{\n" + "		display:list-item;\n" + "		float:none;\n" + "		}\n"
-				+ "\n" + " .ddsmoothmenu ul li ul li ul{\n" + "		top:0;\n" + "		}\n" + "");
+				+ "\n" + " .ddsmoothmenu ul li ul li ul{\n" + "		top:0;\n" + "		\n" + "");
 
 	}
 

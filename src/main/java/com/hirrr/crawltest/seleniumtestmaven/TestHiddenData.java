@@ -42,7 +42,7 @@ public class TestHiddenData {
 
 	public static void main(String[] args) throws IOException, SQLException {
 
-		CssFormater cssObj=new CssFormater();
+		CssFormater cssObj = new CssFormater();
 		TestHiddenData hidden = new TestHiddenData();
 		File file = new File("/home/vigil/Desktop/output/hidden_Data_Test_run");
 		BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -50,10 +50,9 @@ public class TestHiddenData {
 		Elements eles = null;
 		String mainDocCss = "";
 		long startTime=0;
-		
 			try {
 				startTime = System.currentTimeMillis();
-				url = "http://www.ambalalshares.com/Careers.aspx";
+				url = "http://tvarana.com/careers/jobs/";
 				System.out.println(url);
 				mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
 						.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
@@ -76,7 +75,6 @@ public class TestHiddenData {
 
 			// System.out.println(doc.select("style"));
 			hidden.regexMatcherElements(mainDocCss, eles);
-			// regexMatcher(doc);
 			Elements elem = null;
 			// try {
 			elem = mainDoc.select("link");
@@ -100,26 +98,30 @@ public class TestHiddenData {
 						} else
 							addr = strarr.concat(addr);
 					}
-					System.out.println(addr);
+
 					Document doc1 = Jsoup.connect(addr).header("Accept-Encoding", "gzip, deflate")
 							.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
 							.maxBodySize(0).timeout(60000).get();
 
 					String docString = doc1.toString();
 					docString = hidden.mediaChecker(docString);
-//					String cssBeautify = CssFormater.cssBeautifier(docString);
-//					if (cssBeautify.isEmpty()) {
-//						String cssFromDoc1 = doc1.select("style").toString();
-//						String classDiv=cssObj.curlyBraceTraveller(cssFromDoc1);
-//						hidden.seperateClassndDiv(classDiv);
-//						continue;
-//					}
-					String classDiv=cssObj.curlyBraceTraveller(docString);
+					// String cssBeautify = CssFormater.cssBeautifier(docString);
+					// if (cssBeautify.isEmpty()) {
+					// String cssFromDoc1 = doc1.select("style").toString();
+					// String classDiv=cssObj.curlyBraceTraveller(cssFromDoc1);
+					// hidden.seperateClassndDiv(classDiv);
+					// continue;
+					// }
+					String classDiv = cssObj.curlyBraceTraveller(docString);
 					hidden.seperateClassndDiv(classDiv);
+
 				} catch (Exception e) {
 					continue;
 				}
 			}
+
+			// set.removeAll(list);
+			// set1.removeAll(list);
 
 			idArr.addAll(set);
 			classArr.addAll(set1);
@@ -164,7 +166,11 @@ public class TestHiddenData {
 
 					hidden.selectElement(elementId);
 				} else {
+					try {
 					elms = mainDoc.select(elementId);
+					}catch (Exception e) {
+						continue;
+					}
 					if (!elms.isEmpty()) {
 						dbinsertionSet.append(elementId + "****");
 					}
@@ -178,73 +184,73 @@ public class TestHiddenData {
 			System.out.println("\n ----------------------------------------- ");
 			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "seconds\n");
 			System.out.println(" ----------------------------------------- \n");
-		}
 
+
+	}
 
 	private void curlyBraceCheckerAndDocSplitter(String cssVal) {
 
-//		String cssString = cssVal;
-//		int docLength = cssString.length();
-//		int p;
-//		for (int i = 0; i < docLength; i = i + 100) {
-//			for (p = 100; p < docLength; p++) {
-//				docLength = cssString.length();
-//				if (docLength > 100) {
-//					if (cssString.charAt(p) == '}') {
-//						String remove = "";
-//						remove = cssString.substring(0, p + 1);
-//						regexMatcher(remove);
-//						cssString = cssString.replace(remove, "").trim();
-//						// System.out.println(cssString.length());
-//					}
-//				} else {
-//					regexMatcher(cssString);
-//					break;
-//				}
-//			}
-//		}
-		
-		
-		String css=cssVal;
+		// String cssString = cssVal;
+		// int docLength = cssString.length();
+		// int p;
+		// for (int i = 0; i < docLength; i = i + 100) {
+		// for (p = 100; p < docLength; p++) {
+		// docLength = cssString.length();
+		// if (docLength > 100) {
+		// if (cssString.charAt(p) == '}') {
+		// String remove = "";
+		// remove = cssString.substring(0, p + 1);
+		// regexMatcher(remove);
+		// cssString = cssString.replace(remove, "").trim();
+		// // System.out.println(cssString.length());
+		// }
+		// } else {
+		// regexMatcher(cssString);
+		// break;
+		// }
+		// }
+		// }
+
+		String css = cssVal;
 		int docLength = css.length();
 		for (int i = 0; i < docLength; i++) {
-			if(css.charAt(i)=='}') {
-				int limit=i;
-				String checkContent=css.substring(0, limit+1);
+			if (css.charAt(i) == '}') {
+				int limit = i;
+				String checkContent = css.substring(0, limit + 1);
 				regexMatcher(checkContent);
-				css=css.substring(limit+1,docLength);
+				css = css.substring(limit + 1, docLength);
 				docLength = css.length();
-				i=0;
+				i = 0;
 			}
 		}
-		
+
 	}
-	
+
 	public String commentRemover(String value) {
-		
-		int p=0;
-		String returnVal=value;
-		int returnValLentgth=returnVal.length();
+
+		int p = 0;
+		String returnVal = value;
+		int returnValLentgth = returnVal.length();
 		for (int i = 0; i < returnValLentgth; i++) {
-			if(returnVal.charAt(i)=='/' && returnVal.charAt(i+1)=='*') {
-				for ( p = i; p < returnValLentgth; p++) {
-					if(returnVal.charAt(p)=='*' && returnVal.charAt(p+1)=='/') {
-						String remove=returnVal.substring(i, p+2);
-						returnVal=returnVal.replace(remove, "").trim();
-						returnValLentgth=returnVal.length();
+			if (returnVal.charAt(i) == '/' && returnVal.charAt(i + 1) == '*') {
+				for (p = i; p < returnValLentgth; p++) {
+					if (returnVal.charAt(p) == '*' && returnVal.charAt(p + 1) == '/') {
+						String remove = returnVal.substring(i, p + 2);
+						returnVal = returnVal.replace(remove, "").trim();
+						returnValLentgth = returnVal.length();
 						break;
 					}
-					
+
 				}
 			}
-			}
+		}
 		return returnVal.trim();
 	}
 
 	private void regexMatcher(String doc1) {
 
 		try {
-			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w*)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(display: *none)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = null;
 			m = p.matcher(doc1);
@@ -263,7 +269,7 @@ public class TestHiddenData {
 	private void visibilityChecker(String doc) {
 
 		try {
-			String reg = "^((\\ ?\\w+)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(visibility: *hidden)[^\\}]*\\}";
+			String reg = "^((\\ ?\\w*)?(\\.|\\#)([ \\s\\w:>_,.-]+))+ *\\{[^\\}]*(visibility: *hidden)[^\\}]*\\}";
 			Pattern p = Pattern.compile(reg);
 			Matcher m = p.matcher(doc);
 
@@ -301,44 +307,87 @@ public class TestHiddenData {
 		}
 	}
 
+	// public void seperateClassndDiv(String string) {
+	//
+	// String reg = "\\{[^\\}]+\\}";
+	// try {
+	// Pattern p = Pattern.compile(reg);
+	// Matcher m = null;
+	// m = p.matcher(string);
+	//
+	// if (m.find()) {
+	//
+	// string = string.replaceAll(reg, "");
+	// if (string.contains(",")) {
+	// String[] arr = string.split(",");
+	// for (int i = 0; i < arr.length; i++) {
+	// if (arr[i].contains(":")) {
+	// continue;
+	// } else {
+	// if (arr[i].contains("#")) {
+	// // arr[i] = spaceCheck(arr[i]);
+	// set.add(arr[i].trim());
+	// } else if (arr[i].contains(".")) {
+	// // arr[i] = spaceCheck(arr[i]);
+	// set1.add(arr[i].trim());
+	// }
+	// }
+	// }
+	// } else {
+	//
+	// if (string.contains("#") && !string.contains(":")) {
+	// // string = spaceCheck(string);
+	// set.add(string.trim());
+	// } else if (string.contains(".") && !string.contains(":")) {
+	// // string = spaceCheck(string);
+	// set1.add(string.trim());
+	// }
+	//
+	// }
+	// }
+	// } catch (Exception e) {
+	// System.out.println(e);
+	// }
+	// }
+
 	public void seperateClassndDiv(String string) {
 
-//		String reg = "\\{[^\\}]+\\}";
+		// String reg = "\\{[^\\}]+\\}";
 		try {
-//			Pattern p = Pattern.compile(reg);
-//			Matcher m = null;
-//			m = p.matcher(string);
+			// Pattern p = Pattern.compile(reg);
+			// Matcher m = null;
+			// m = p.matcher(string);
 
-//			if (m.find()) {
+			// if (m.find()) {
 
-//				string = string.replaceAll(reg, "");
-				if (string.contains(",")) {
-					String[] arr = string.split(",");
-					for (int i = 0; i < arr.length; i++) {
-						if (arr[i].contains(":")) {
-							continue;
-						} else {
-							if (arr[i].contains("#")) {
-								// arr[i] = spaceCheck(arr[i]);
-								set.add(arr[i].trim());
-							} else if (arr[i].contains(".")) {
-								// arr[i] = spaceCheck(arr[i]);
-								set1.add(arr[i].trim());
-							}
+			// string = string.replaceAll(reg, "");
+			if (string.contains(",")) {
+				String[] arr = string.split(",");
+				for (int i = 0; i < arr.length; i++) {
+					if (arr[i].contains(":")) {
+						continue;
+					} else {
+						if (arr[i].contains("#")) {
+							// arr[i] = spaceCheck(arr[i]);
+							set.add(arr[i].trim());
+						} else if (arr[i].contains(".")) {
+							// arr[i] = spaceCheck(arr[i]);
+							set1.add(arr[i].trim());
 						}
 					}
-				} else {
-
-					if (string.contains("#") && !string.contains(":")) {
-						// string = spaceCheck(string);
-						set.add(string.trim());
-					} else if (string.contains(".") && !string.contains(":")) {
-						// string = spaceCheck(string);
-						set1.add(string.trim());
-					}
-
 				}
-//			}
+			} else {
+
+				if (string.contains("#") && !string.contains(":")) {
+					// string = spaceCheck(string);
+					set.add(string.trim());
+				} else if (string.contains(".") && !string.contains(":")) {
+					// string = spaceCheck(string);
+					set1.add(string.trim());
+				}
+
+			}
+			// }
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -411,26 +460,36 @@ public class TestHiddenData {
 	private void selectElement(String value) {
 
 		String[] splitArr = value.split(" ");
-		Elements eles = mainDoc.select(splitArr[0]);
 		Elements elements = new Elements();
-		for (Element element : eles) {
-			if (splitArr[0].startsWith("#") && element.hasAttr("id")) {
-				String id = "#" + element.attr("id");
-				if (id.equals(splitArr[0])) {
-					elements.add(element);
-				}
-			} else if (splitArr[0].startsWith(".") && element.hasAttr("class")) {
-				String className = "." + element.attr("class").replaceAll("\\s+", ".");
-				if (className.equals(splitArr[0])) {
-					elements.add(element);
+		Elements eles = new Elements();
+		for (int i = 0; i < splitArr.length; i++) {
+			try {
+				eles = mainDoc.select(splitArr[i]);
+			} catch (Exception e) {
+				continue;
+			}
+
+			for (Element element : eles) {
+				if (splitArr[i].startsWith("#") && element.hasAttr("id")) {
+					String id = "#" + element.attr("id");
+					if (id.equals(splitArr[0])) {
+						elements.add(element);
+					}
+				} else if (splitArr[i].startsWith(".") && element.hasAttr("class")) {
+					String className = "." + element.attr("class").replaceAll("\\s+", ".");
+					if (className.equals(splitArr[0])) {
+						elements.add(element);
+					}
 				}
 			}
+			break;
 		}
 
 		int h = 0;
 		eles.clear();
 		eles = elements;
 		for (int i = 1; i < splitArr.length; i++) {
+			try{
 			for (Element element : elements) {
 				// elements = element.select(splitArr[i]);
 				if (splitArr[i].startsWith(".")) {
@@ -449,11 +508,16 @@ public class TestHiddenData {
 				}
 
 			}
+		}catch (Exception e) {
+			continue;
 		}
+	}
 		if (!elements.isEmpty() && elements != eles) {
 			dbinsertionSet.append(value + "****");
 		}
 	}
+	
+	
 
 	private String badWordCheck(String addr) {
 
