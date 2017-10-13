@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Vigil V Rapheal 
+ *
+ */
 public class CssFormater {
 
 	public static String cssBeautifier(String value) {
@@ -85,44 +89,93 @@ public class CssFormater {
 		int i = 0;
 		String limit = "";
 		int k = 0;
-
-		for (i = 0; i < cssLength;) {
-			if (cssVal.contains("{")) {
-				if (cssVal.charAt(i) == '{') {
-					// if(i==20_000)break;
-					requiredPath = cssVal.substring(0, i);
-					if (cssVal.contains("}")) {
+//		if (cssVal.contains("{") && cssVal.contains("}")) {
+//			for (i = 0; i < cssLength;) {
+//				if (cssVal.contains("{")) {
+//					if (cssVal.charAt(i) == '{') {
+//						// if(i==20_000)break;
+//						requiredPath = cssVal.substring(0, i);
+//							for (j = i; j < cssLength; j++) {
+//								if (cssVal.contains("}")) {
+//								System.out.println("ethi----- " + j);
+//								if (cssVal.charAt(j) == '}') {
+//									System.out.println("ethilla :(");
+//									closeBrace = j;
+//									limit = cssVal.substring(i, closeBrace + 1);
+//									if (displayAndVisisbility(limit)) {
+//										returnBuilder.append(requiredPath + ", ");
+//									}
+//
+//									// cssVal = cssVal.replace(limit, "").trim();
+//									cssVal = cssVal.substring(closeBrace + 1, cssLength).trim();
+//
+//									cssLength = cssVal.length();
+//									System.out.println("Length ---- " + cssLength);
+////									System.out.println(cssVal);
+//									i = 0;
+//									// System.out.println(limit);
+//									break;
+//
+//								} else
+//									continue;
+//							} else
+//								break;
+//							}
+//						
+//					} else {
+//						i++;
+//					}
+//
+//				} else
+//					break;
+//			}
+//		}
+		
+		if (cssVal.contains("{") && cssVal.contains("}")) {
+			for (i = 0; i < cssLength;) {
+				System.out.println("k ------ "+k++);
+				if(k==2_00_000) break;
+				if (cssVal.contains("{") && cssVal.contains("}")) {
+					if (cssVal.charAt(i) == '{') {
+						requiredPath = cssVal.substring(0, i);
 						for (j = i; j < cssLength; j++) {
-							// System.out.println("ethi----- "+j);
-							if (cssVal.charAt(j) == '}') {
-								closeBrace = j;
-								limit = cssVal.substring(i, closeBrace + 1);
-								if (displayAndVisisbility(limit)) {
-									returnBuilder.append(requiredPath + ", ");
+							if (cssVal.contains("}")) {
+								if (cssVal.charAt(j) == '}') {
+									closeBrace = j;
+									limit = cssVal.substring(i, closeBrace + 1);
+									if (displayAndVisisbility(limit)) {
+										returnBuilder.append(requiredPath + ", ");
+									}
+									cssVal = cssVal.substring(closeBrace + 1, cssLength).trim();
+
+									cssLength = cssVal.length();
+									System.out.println("Length ---- " + cssLength);
+									i = 0;
+									break;
 								}
-
-								// cssVal = cssVal.replace(limit, "").trim();
-								cssVal = cssVal.substring(closeBrace + 1, cssLength).trim();
-
-								cssLength = cssVal.length();
-								// System.out.println("Length ---- "+cssLength);
-								i = 0;
-								// System.out.println(limit);
+							} else {
 								break;
-
-							} else
-								continue;
+							}
 						}
-					} else
-						break;
-				} else {
-					i++;
+					} else {
+						i++;
+					}
+				
+				}else {
+					break;
 				}
-
-			} else
-				break;
+			
+			}
 		}
+		
 		return returnBuilder.toString();
+	}
+	
+	private String curlyBraceRemover() {
+		
+		
+		
+		return "";
 	}
 
 	public String commentRemover(String value) {
@@ -185,7 +238,7 @@ public class CssFormater {
 	public static void main(String[] args) {
 		CssFormater css = new CssFormater();
 
-		css.curlyBraceTraveller(".ddsmoothmenu ul li a.selected{\n" + "		background:#00aff8 !important;\n"
+		css.curlyBraceTraveller(".ddsmoothmenu ul li a.selected\n" + "		background:#00aff8 !important;\n"
 				+ "		color:white;\n" + "		}\n" + "\n" + " .ddsmoothmenu ul li a:hover{\n"
 				+ "		background:#00aff8;\n" + "		color:white;\n" + "		}\n" + "\n"
 				+ " .ddsmoothmenu ul li ul{\n" + "		position:absolute;\n" + "		left:-3000px;\n"

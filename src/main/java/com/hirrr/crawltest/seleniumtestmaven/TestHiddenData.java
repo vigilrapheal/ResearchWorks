@@ -52,7 +52,7 @@ public class TestHiddenData {
 		long startTime=0;
 			try {
 				startTime = System.currentTimeMillis();
-				url = "http://tvarana.com/careers/jobs/";
+				url = "https://www.snapdeal.com/products/health-supplements-meals-replacements/filters/discount~10%20-%2020";
 				System.out.println(url);
 				mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
 						.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
@@ -75,7 +75,7 @@ public class TestHiddenData {
 
 			// System.out.println(doc.select("style"));
 			hidden.regexMatcherElements(mainDocCss, eles);
-			Elements elem = null;
+			Elements elem = new Elements();
 			// try {
 			elem = mainDoc.select("link");
 			// } catch (Exception e) {

@@ -50,6 +50,7 @@ public class TestJsoupScraping {
 		Elements eles = null;
 		String mainDocCss = "";
 		long startTime;
+		long totalTime=0;
 		while ((value = reader.readLine()) != null) {
 			try {
 				startTime = System.currentTimeMillis();
@@ -80,9 +81,7 @@ public class TestJsoupScraping {
 			hidden.regexMatcherElements(mainDocCss, eles);
 			if (mainDoc == null)
 				continue;
-			// regexMatcher(doc);
-			Elements elem = null;
-			// try {
+			Elements elem = new Elements();
 			elem = mainDoc.select("link");
 			// } catch (Exception e) {
 			//
@@ -195,8 +194,10 @@ public class TestJsoupScraping {
 			System.out.println("\n ----------------------------------------- ");
 			System.err.println("TOTAL TIME CONSUMED --- " + timeConsumed + "seconds\n");
 			System.out.println(" ----------------------------------------- \n");
+			totalTime+=timeConsumed;
 		}
-
+		
+		System.err.println("TOTAL TIME CONSUMED ------ "+totalTime/1000+" Seconds");
 	}
 
 	private void curlyBraceCheckerAndDocSplitter(String cssVal) {
@@ -457,12 +458,13 @@ public class TestJsoupScraping {
 				if (element.hasAttr("class") && ("." + element.className().trim()).equals(elementId.trim())) {
 
 					dbinsertionSet.append(elementId + "****");
+					break;
 				}
 			} else {
 				if (element.hasAttr("id") && ("#" + element.id().trim()).equals(elementId.trim())) {
 
 					dbinsertionSet.append(elementId + "****");
-
+					break;
 				}
 			}
 		}
