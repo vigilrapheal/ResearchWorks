@@ -16,47 +16,61 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.hirrr.crawltest.seleniumtestmaven.SeleniumIssuescrap;
-
+/**
+ * @author VIGIL V RAPHEAL
+ *
+ */
 public class LanguageDetector {
 
-	private static int counter = 0;
-	private static int englishCounter = 0;
-	private static HashSet<String> set=new HashSet<>();
+	private int counter = 0;
+	private int englishCounter = 0;
+	private static HashSet<String> set = new HashSet<>();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		
-		String url="";
+
+		String url = "http://www.goldenland.co.th/home/";
 		LanguageDetector lang = new LanguageDetector();
 		WebDriver driver = null;
 		Document mainDoc = null;
 
 		driver = lang.seleniumHTMLRunner();
-			ArrayList<String> arr=new ArrayList<>();
+
+		ArrayList<String> arr = new ArrayList<>();
+
 		mainDoc = Jsoup.connect(url).header("Accept-Encoding", "gzip, deflate")
 				.userAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0")
 				.maxBodySize(0).timeout(60000).get();
-		long startTime = System.currentTimeMillis();
+
 		Elements eles = mainDoc.select("div");
 		String ret = lang.htmlRemover(eles.toString());
 		String[] splitval = ret.trim().split(" ");
 		for (int i = 0; i < splitval.length; i++) {
-			if (counter > 3 || englishCounter > 3 || set.size()>1) {
+			if (lang.counter > 3 || lang.englishCounter > 3 || set.size() > 2) {
 				break;
 			}
 			lang.getLanguage(splitval[i].trim(), driver);
 		}
-		long endTime = System.currentTimeMillis();
 		arr.addAll(set);
 		set.clear();
-		System.out.println("TIME CONSUMED IS ----- - " + (startTime - endTime) / 1000 + " seconds");
-
-		if(arr.size()==1){
-//			return arr.get(0);
+		StringBuilder strBuild = new StringBuilder();
+		if (arr.size() == 1) {
+			// return arr.get(0);
 			System.out.println(arr.get(0));
+		} else if (arr.size() > 1) {
+			for (int i = 0; i < arr.size(); i++) {
+				strBuild.append(arr.get(i));
+				if (i != arr.size() - 1) {
+					strBuild.append("~~~");
+				}
+			}
+			// return strBuild.toString();
+			System.out.println(strBuild);
+		} else {
+			System.out.println("English");
 		}
-		counter=0;
-		englishCounter=0;
-		
+		lang.counter = 0;
+		lang.englishCounter = 0;
+		// return "English";
 	}
 
 	private String htmlRemover(String value) {
@@ -102,7 +116,7 @@ public class LanguageDetector {
 
 	private String removeSpecialChara(String value) {
 
-		String regex = "[-!$%^&*()_+|~=`{}\\[\\]:\";'<>?,.\\/]";
+		String regex = "[-!$%^&*()_+|~=`{}\\[\\]:\";'<>?\\@\\©\\#,.\\/]";
 		String returnVal = value;
 		Pattern p = Pattern.compile(regex);
 		Matcher m = null;
@@ -110,7 +124,7 @@ public class LanguageDetector {
 		while (m.find()) {
 			returnVal = returnVal.replace(m.group(), "");
 		}
-		returnVal=returnVal.replace("’", "").replace("–", "");
+		returnVal = returnVal.replace("’", "").replace("–", "");
 		return returnVal.trim();
 	}
 
@@ -131,13 +145,20 @@ public class LanguageDetector {
 	}
 
 	private void getLanguage(String text, WebDriver driver) throws InterruptedException {
-		if (!text.trim().isEmpty() && !(text.contains("\\") | text.contains("*") | text.contains("&"))) {
+		if (!text.trim().isEmpty() && !(text.contains("\\") || text.contains("*") || text.contains("&"))) {
 			driver.findElement(By.id("source")).sendKeys(text);
 			Thread.sleep(3000);
-			driver.navigate().refresh();
-			Thread.sleep(3000);
+
 			WebElement ele1 = driver.findElement(
 					By.xpath("/html/body/div[3]/div[2]/form/div[2]/div/div/div[1]/div[1]/div[1]/div[1]/div[5]"));
+
+			if (ele1.getText().trim().toUpperCase().contains("LANGUAGE")) {
+				driver.navigate().refresh();
+				Thread.sleep(3000);
+				ele1 = driver.findElement(
+						By.xpath("/html/body/div[3]/div[2]/form/div[2]/div/div/div[1]/div[1]/div[1]/div[1]/div[5]"));
+			}
+
 			if (!ele1.getText().toUpperCase().contains("ENGLISH")) {
 				counter++;
 				set.add(ele1.getText().split("-")[0].trim());
@@ -149,7 +170,7 @@ public class LanguageDetector {
 				driver.findElement(By.id("gt-clear")).click();
 				Thread.sleep(4000);
 			} catch (Exception e) {
-
+				Thread.sleep(4000);
 			}
 		}
 	}
