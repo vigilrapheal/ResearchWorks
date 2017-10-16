@@ -1,9 +1,8 @@
-package googleTranslator;
+package com.hirrr.learner.googletranslator;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +14,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-import com.hirrr.crawltest.seleniumtestmaven.SeleniumIssuescrap;
 /**
  * @author VIGIL V RAPHEAL
  *
@@ -26,14 +24,16 @@ public class LanguageDetector {
 	private int englishCounter = 0;
 	private static HashSet<String> set = new HashSet<>();
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public String languageDetector(String url) throws IOException, InterruptedException {
 
-		String url = "http://www.goldenland.co.th/home/";
-		LanguageDetector lang = new LanguageDetector();
 		WebDriver driver = null;
 		Document mainDoc = null;
 
-		driver = lang.seleniumHTMLRunner();
+		try {
+			driver = seleniumHTMLRunner();
+		} catch (NullPointerException e) {
+			 return "Cannot Process";
+		}
 
 		ArrayList<String> arr = new ArrayList<>();
 
@@ -42,20 +42,20 @@ public class LanguageDetector {
 				.maxBodySize(0).timeout(60000).get();
 
 		Elements eles = mainDoc.select("div");
-		String ret = lang.htmlRemover(eles.toString());
+		String string=eles.toString();
+		String ret = htmlRemover(string);
 		String[] splitval = ret.trim().split(" ");
 		for (int i = 0; i < splitval.length; i++) {
-			if (lang.counter > 3 || lang.englishCounter > 3 || set.size() > 2) {
+			if (counter > 3 || englishCounter > 3 || set.size() > 2) {
 				break;
 			}
-			lang.getLanguage(splitval[i].trim(), driver);
+			getLanguage(splitval[i].trim(), driver);
 		}
 		arr.addAll(set);
 		set.clear();
 		StringBuilder strBuild = new StringBuilder();
 		if (arr.size() == 1) {
-			// return arr.get(0);
-			System.out.println(arr.get(0));
+			 return arr.get(0);
 		} else if (arr.size() > 1) {
 			for (int i = 0; i < arr.size(); i++) {
 				strBuild.append(arr.get(i));
@@ -63,14 +63,12 @@ public class LanguageDetector {
 					strBuild.append("~~~");
 				}
 			}
-			// return strBuild.toString();
-			System.out.println(strBuild);
-		} else {
-			System.out.println("English");
-		}
-		lang.counter = 0;
-		lang.englishCounter = 0;
-		// return "English";
+			 return strBuild.toString();
+		} 
+		counter = 0;
+		englishCounter = 0;
+		
+		 return "English";
 	}
 
 	private String htmlRemover(String value) {
@@ -129,16 +127,12 @@ public class LanguageDetector {
 	}
 
 	private WebDriver seleniumHTMLRunner() {
-
-		WebDriver driver = new FirefoxDriver(/* firefoxBinary, null */);
-		Logger log = Logger.getLogger(SeleniumIssuescrap.class.toString());
+		WebDriver driver = new FirefoxDriver();
 		try {
 			driver.get("https://translate.google.com/");
 			Thread.sleep(3000);
-			log.info("reached");
 		} catch (Exception e) {
-			log.info(e.toString());
-			log.info("exception");
+			return null;
 		}
 
 		return driver;
