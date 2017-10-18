@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.hirrr.learner.googletranslator;
+package com.hirrr.crawltest.SeleniumTestMaven;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -21,6 +21,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.hirrr.learner.googletranslator.LanguageDetector;
 
 /**
  * @author VIGIL V RAPHEAL
